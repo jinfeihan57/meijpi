@@ -108,7 +108,7 @@ Widget& Widget::operator=(Wiget rhs){   // 采用值传递的方式可以避免 
 
 ​		**管理对象运用析构函数确保资源被释放**：如果资源释放动作可能导致异常抛出，事情将棘手，参考条款8解决异常问题。
 
-​		**使用智能指针对资源进行管理：**
+​		**使用智能指针对heap资源进行管理：**
 
 ​		1：auto_ptr ：在赋值后即会失去自己对对象的拥有权，拥有权转移到了新的指针对象上，自己变为了空指针。
 
@@ -125,7 +125,55 @@ shared_ptr<int> spi(new int[10])   // 虽然编译器不会报错，但是这样
 - [ ] 为防止资源泄露，请使用RAII（Resource Acquisition Is Initialization）对象，他们在构造函数中获得资源并在析构函数中释放资源。
 - [ ] 两个常被使用的RAII class分别是 shared_ptr 和 auto_ptr，通常使用前者。
 
-### 条款14：
+### 条款14：在资源管理类中小心copying行为
+
+​		如果资源不是heap-based资源，auto_ptr和shared_ptr将不适合对这类资源进行管理。例如：
+
+```c++
+class Lock{
+public:
+    explicit Lock(Mutex *pm):mutexPtr(pm){
+        lock(mutexPtr);
+    }
+    ~Lock(){ unlock(mutexPtr);}
+private:
+    Mutex *mutexPtr;
+}
+
+int fun(){
+    ...
+    Mutex m;		// 定义互斥器
+    {
+        Lock m1(&m);// 锁定互斥器 在大括号内有效
+        ...
+    }				
+    ...				// 互斥器，自动解锁，m1 出生命区间自动析构解锁
+}
+```
+
+​		禁止复制：许多时候RAII类资源被复制时不合理的，例如上面 Mutex 的例子。如果复制动作对RAII不合理，应该禁止它。参考条款06，将其声明到private域或者声明为delete。
+
+​		对底层资源祭出“引用计数法”：有时候我们希望保有资源，直到最后一个使用者被销毁。这种情况下复制RAII对象，只是将资源的引用数递增。shared_ptr就是reference count实现的。通常只要内含一个shared_ptr即可，但是shared_ptr在引用为0时会删除所指物。例如在Mutex上我们只是希望它unlock而非delete。 幸运的是shared_ptr允许我们指定删除器，是一个函数或者仿函数。
+
+```c++
+class Lock{
+public:
+    explicit Lock(Mutex * const pm):mutexPtr(pm, unlock){  // 第二参数为智能指针引用为0时调用的delete函数。
+        lock(mutexPtr.get());    
+    }
+private:
+    shared_ptr<Mutex> mutexPtr;  // 采用智能指针而非普通指针
+};
+```
+
+​		本例中 Lock class不在声明析构函数（编译器自动生成），因为没有必要。条款05:析构函数（编译器生成的）会自动调用其non-static成员变量的析构函数，这里mutexPtr的析构函数在引用计数到达0时被调用，而mutexPtr的析构函数被重定向为unlock。注解:上面代码中涉及两个对象，一个是Lock，另一个shared_ptr<Mutex>，Lock采用编译器默认的析构函数，而mutexPtr使用的析构函数为unlock。具体参见shared_ptr的构造函数第二参数。
+
+​		复制底层资源：在复制资源管理对象时，进行深拷贝。例如 heap-based 资源。
+
+​		转移底部资源的拥有权：即copy构造和copy复制函数会剥夺被复制物的资源控制权给目标。动作如auto_ptr。
+
+- [ ] 复制RAII对象必须一起复制他所管理的资源，所以资源的copying行为决定RAII对象的copying行为。
+- [ ] 普遍而常见的RAII class copying行为是：抑制copying、施行引用计数法（reference counting）。不过其他行为也都是可以被实现的。
 
 ### 条款15：
 

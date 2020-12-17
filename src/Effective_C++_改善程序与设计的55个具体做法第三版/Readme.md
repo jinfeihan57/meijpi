@@ -18,9 +18,19 @@
 
 ## 第二章 构造/析构/赋值运算
 
-
+​		几乎你写的每一个类都会有一个或多个构造函数，一个析构函数，一个copy assignment操作符。这些基础的类操作，控制着对象的初始化和确保对象被适当的清理掉。因此这些函数的正确行为至关重要。
 
 ### 条款05：了解C++默默编写并调用那些函数
+
+​		经过C++编译器处理，如果你自己没有声明一个copy构造函数，一个copy assignment操作符，一个析构函数，一个构造函数。则编译器会为你自动生成对应的函数，注意编译器生成的析构函数为non-virtual，编译器生成的构造为default（无参）构造。并且由编译器生成的这些函数都是public且inline的。
+
+​		default 构造函数和析构函数主要是为了给编译器一个地方来放置藏身幕后的代码，像是调用base classes 和 non-static成员变量的构造函数和析构函数。
+
+​		至于copy构造和copy assignment操作符，编译器创建的版本，只是单纯的将来源对象的每一个非静态成员变量拷贝到目标对象。如果成员为内置类型（int、double...）在采用真是copy每一个bit的方法copy，如果成员为对象则会调用成员的copy构造和copy assignment。因此要保证成员有copy构造和copy assignment默认copy构造和copy assignment才可以成功，否则报错。此外成员还要满足可以copy assignment （引用和const类型的成员变量则不可以copy assignment）： string &name; const int value;包含这两种类型成员的情况不允许做copy assignment动作。
+
+​		**const 和引用类型的初始化只能在构造函数的初始化列表做，包含这两种类型的类必须遵守条款06，明确的拒绝copy assignment。**
+
+- [ ] 编译器可以暗自为class创建default构造函数，copy构造函数，copy assignment操作符，以及析构函数。
 
 ### 条款06：若不想使用编译器自动生成的函数，就该明确拒绝
 
@@ -37,6 +47,17 @@
 - [ ] 为驳回编译器自动提供的机能，~~可将相应的成员函数声明为private并且不予实现。使用像Uncopyable这样的基类也是一种做法。~~或者声明为=delete;
 
 ### 条款07：为多态基类声明virtual析构函数
+
+​		C++明确的支出，当derived class 对象经由一个base class 指针被删除，而该base class 带着一个non-virtual析构函数，其结果未有定义（实际执行时通常只销毁了base成分，对象的derived成分没有被销毁）。消除这个问题的做法很简单即将积累的析构函数声明为virtual。任何class只要带有virtual函数就可以确定也有一个virtual析构函数。
+
+​		virtual析构是将析构函数也放入子类的虚函数表中，因此在析构时会去虚函数表中查找析构函数。如果析构函数不是virtual则无法构成多态，则基类指针或引用在调用析构函数时，调用的就是基类的析构函数。此外不含虚函数的类将其析构函数声明为virtual则会为类无端增加虚函数指针，增大内存消耗。
+
+​		没有virtual函数（虚析构也是虚函数）的类最好不要继承，因为当derived类指针强转为base类后，delete base 指针时derived中的子类成分无法销毁。标准库中的所有容器，string都是没有虚函数的。**C++11新标准中对于不想被继承的类提供final关键字。**
+
+​		在实现多态时我们通常需要一个抽象类（无法被实例化），这个抽象类提供一系列的函数接口。等待子类继承后在具体实现。这个抽象类的析构函数必须是virtual函数，并且这个virtual析构必须实现为虚函数。因为子类在析构时会首先调用父类的析构函数，因此必须实现（空函数即可）。
+
+- [ ] polymorphic (多态性质) base class 应该声明一个virtual析构函数。如果class带有任何virtual函数，他就应该拥有一个virtual析构函数。
+- [ ] classes的设计目的如果不是为了作为base class使用，或不是为了具备多态性质，就不该声明virtual虚构函数。
 
 ### 条款08：别让异常逃离析构函数
 
@@ -96,7 +117,60 @@ private:
 
 ### 条款09：绝不再构造和析构过程调用virtual函数
 
+​		子类构造函数若调用了虚函数，则子类构造函数调用的是父类的虚函数而非子类的，因此在构造函数中不要调用虚函数。
+
+​		由于子类在构造时会先构造父类，因此当父类的构造函数执行时，子类的成员还未初始化，如果此时调用了子类的virtual函数，要知道子类的virtual函数几乎必然调用local成员变量，而这些成员变量未被初始化，因此调用子类的virtual不安全。所以编译器在构造函数中调用virtual函数时会调用父类的。
+
+​		当构造子类中的父类时，对象的类型是父类而不是子类，不只virtual函数会被编译器解析为父类的。构造期间virtual函数不是virtual函数。
+
+​		相同的道理析构函数也一样，只是和构造函数顺序相反。
+
+​		在多个构造函数时难免有很多重复代码，此时在父类可以采用非虚函数的方式，在子类构造时，指定父类的构造函数。
+
+```c++
+class Transaction{
+public:
+	explicit Transaction(const std::stding & logInfo);
+    void logTranscation(const std::stding & logInfo)) const;
+    ...
+};
+Transaction::Transaction(const std::stding & logInfo){
+    ...
+    logTranscation(logInfo);
+    ...
+}
+class BuyTransaction:public Transaction{
+public:
+    BuyTransaction(parameters):Transaction(createLogString(parameters)){	// 指定父类构造函数 初始化列表除了初始化类成员还可以初始化 基类
+        ...																	// 使用静态函数对父类的参数进行辅助
+    }
+    ...
+private:
+    static std::string createLogString(parameters);		// 类内静态函数可以理解为，全局函数，因此不受“初期未成熟之对象内未初始化的影响”
+}
+```
+
+- [ ] 在构造和析构期间不要调用virtual函数，应为这类调用从不下降至derived class（比起当前执行构造函数和析构函数的那层）。
+
 ### 条款10：令operator=返回一个reference to * this
+
+​		为了实现连锁赋值，赋值操作符必须返回一个reference指向操作符的左侧实参。
+
+```c++
+Widget& operator=(){
+	...;
+	return *this;
+}
+```
+
+```
+Widget& operator+=(){
+	...;
+	return *this;
+}
+```
+
+- [ ] 令 =，+=，-= 等赋值操作符，返回一个reference to *this。
 
 ### 条款11：在operator=中处理“自我赋值”
 

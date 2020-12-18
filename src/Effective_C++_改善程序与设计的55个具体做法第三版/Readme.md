@@ -236,6 +236,35 @@ Widget& Widget::operator=(Wiget rhs){   // 采用值传递的方式可以避免 
 
 ### 条款12：赋值对象是勿忘其中每一个成分
 
+​		在对象赋值或copy时，确保对象中的每一个元素都被赋值。
+
+​		1.当对象增加属性时，必须对其所有构造函数和operator=进行必要更新。静态属性则需要进行初始化。
+
+​		2.当有继承发生时，子类的copy动作，必须包括父类属性的copy（显式的调用父类的copy构造或者operator=函数）。
+
+```c++
+class PriortyCustomer：public Customer{
+public:
+    PriortyCustomer(const PriortyCustomer & rhs);
+    PriortyCustomer& operator=(const PriortyCustomer & rhs)
+private:
+    int priority;
+}
+PriortyCustomer::PriortyCustomer(const PriortyCustomer & rhs)	// 子类copy构造
+    							:Customer(rhs),		// 基类的copy构造调用  如果不指定基类的copy构造则基类只进行无参构造过程 同样在普通构造函数中也要显式的指定基类的构造 否则父类都是采用默认构造
+								priority(rhs.priority){		//	子类属性copy构造
+    ...
+}
+PriortyCustomer& PriortyCustomer::operator=(const PriortyCustomer & rhs){
+    Customer::operator=(rhs);	// 基类operator=调用，赋值基类的属性
+    priority = rhs.priority;
+    return *this;
+}
+```
+
+- [ ] copying函数应该确保赋值“对象内的所有变量”及“所有base class成分”。
+- [ ] 不要尝试以某个copying函数实现另一个copying函数。应该将共同机能放进第三个函数中，并有两个copying函数共同调用。
+
 ## 第三章 资源管理
 
 ​		所谓资源就是，一旦用了它，将来一定要还给系统。如果不这样糟糕的事情就会发生。C++程序中最常用的资源就是动态内存分配，但是内存分配只是你必须管理的众多资源之一。其他常见的资源还包括问文件描述符，互斥锁，数据库连接，网络连接socket以及图形界面中的字形和笔刷。

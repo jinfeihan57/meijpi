@@ -381,7 +381,19 @@ public:
 - [ ] APIs往往要求访问原始资源，所以每一个RAII class 应该提供一个“取得其所管理的资源”的方法。
 - [ ] 对原始资源的访问可能经由显示的转换和隐式的转换，一般而言显示的转换比较安全，可读性高。但是隐式的转换更加方便。
 
-### 条款16：
+### 条款16：成对使用new和delete时要采取相同的形式
+
+​		没啥好说的，数组指针和对象指针是两种内存形式，析构时必须区别对待。
+
+​		特殊说明：最好不要对数组形式做typedef动作。
+
+```c++
+typedef std::string AddressLines[4];    // std::string[4] 被重定向为 AddressLines。
+
+std::string* pal = new AddressLines;   // 等价 new std::string[4];
+```
+
+- [ ] 如果你在new表达式中是用了[ ]，必须在相应的delete表达式中是用[ ].如果new没有使用[ ],相应的delete也一定不要使用[ ].
 
 ### 条款17：
 

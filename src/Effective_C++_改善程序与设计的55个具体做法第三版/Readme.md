@@ -395,7 +395,35 @@ std::string* pal = new AddressLines;   // 等价 new std::string[4];
 
 - [ ] 如果你在new表达式中是用了[ ]，必须在相应的delete表达式中是用[ ].如果new没有使用[ ],相应的delete也一定不要使用[ ].
 
-### 条款17：
+### 条款17：以独立语句将newed对象放入智能指针
+
+​		指针是指针类型，智能指针是对象类型。只是行为表现上像一个指针。
+
+​		假设如下代码：
+
+```c++
+processWidget(shared_ptr<Widget>(new Widget), priority());
+```
+
+​		processWidget函数第一参数为智能指针对象，第二参数为priority( )函数返回值。这个语句的参数初始化，必须完成以下三件事：
+
+​		1.调用priority( );
+
+​		2.new Widget;
+
+​		3.shared_ptr 构造智能指针
+
+​		但是编译器以什么样的顺序完成以上工作是很灵活的。因此，如果以2，1，3的顺序初始化入参。如果priority( )抛出了异常，则会造成new Widget的资源泄露。因为资源还没有放入智能指针中。
+
+​		为确保指针与智能指针结合之间没有其他（可能抛出异常）语句的穿插。采用以下语句顺序：
+
+```c++
+shared_ptr<Widget> pw(new Widget);   // 保证资源与智能指针的结合没有被中断
+
+processWidget(pw, priority());
+```
+
+- [ ] 以独立的语句将newed对象存储于智能指针内，如果不这样做，一但异常被抛出，有可能导致难以察觉的资源泄露。
 
 ## 第四章
 

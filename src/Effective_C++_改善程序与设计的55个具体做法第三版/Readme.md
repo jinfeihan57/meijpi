@@ -561,7 +561,54 @@ private:
 
 ### 条款24 : 若以有参数皆需类型转换，请为此采用non-member函数
 
+​		令class支持隐式转换通常是个坏主意，当然这个也有例外。最常见的例外是建立数值类型时，假设设计有理数类，允许整数隐式转换为有理数是合理的要求。就像c++内置类中int向double的隐式转换。
 
+```c++
+class Rational{
+public:
+    Rational(int numerator = 0, int denominator = 1);  // 整数隐式转换为Rational类型
+    int numerator() const;
+    int denominator() const;
+private:
+    ...
+}
+```
+
+​		现在使Rational类支持乘法运算，如果将 operator* 作为member函数。
+
+```c++
+class Rational{
+public:
+    ...
+    const Rational operator* (const Rational &rhs) const;
+private:
+    ...
+}
+```
+
+​		此时将两个Rational相乘是没问题的，但是我们也许需要他和其他可隐式转换的函数相乘。例如：
+
+```c++
+Rational oneHalf;
+Rational result0 = oneHalf * 2;   // OK     reuslt0 = oneHalf.operator(Rational(2));  此处2倍隐式转换了
+Rational result1 = 2 * Rational;  // ERROR	result1 = 2.operator(oneHalf);			  这里也有隐式转换只是转换失败
+```
+
+​		编译器在遇到第二种情况时，还会继续寻找 result = operator（2，oneHalf）函数。找不到即报错。
+
+​		在此种需要类型转换的情况下，采用non-member函数，这样编译器就会匹配到能调用的函数。
+
+```c++
+const Rational operator* (const Rational &lhs，const Rational &rhs) {
+    return Rational(lhs.numerator() * rhs.numerator(), lhs.denominator() * rhs.denominator());
+}
+```
+
+​		operator* 函数是否应该成为Rational的friend函数？
+
+​		就本例而言，Rational的public接口完全可以完成以上任务，因此不需要设计为friend函数。member函数的反义词时non-member函数不是friend函数。在有可能的情况下，应该尽可能的避免friend函数。
+
+- [ ] 如果你要为某个函数的所有参数（包括this指针所指的那个隐喻参数）进行类型转换，那么这个函数必须是个non-member。
 
 ### 条款25 : 考虑写出一个不抛出异常的swap函数
 

@@ -543,6 +543,26 @@ private:
 
 ### 条款21 : 必须返回对象时，别妄图返回其reference
 
+​		local static上的对象在函数返回时会被销毁，如果返回其指针或者引用都是应该被禁止的。
+
+​		妄图返回new出的对象的引用也是不安全的（如果返回值作为临时匿名对象将无法delete对应的内存）。
+
+```c++
+const Rational& operator* (const Rational &lhs, const Rational &rhs) {
+    Rational* result = new Rational(lhs.nxxx*rhs.nxxx, lhs.dxxx*rhs.dxxx);
+    return result;
+}
+Rational x, y, z;
+Rational &w = x * y;		// delete &w可以释放内存
+Rational &u = x * y * z;  	// 内存泄露 delete u 智能释放后一次的内存而前一次的匿名对象无法被释放
+```
+
+​		~~如果返回local static对象，则面临多线程的安全问题，以及无法保存临时匿名对象结果（如果需要比较两次operator* 的临时结果）。~~
+
+​		我们做的一切都是希望避免对象构造和析构的成本，但是这是无法从变成语言角度避免的。别忘c++编译器拥有无上的权限，他可以做这个方面的编译优化事实上大多数编译器也是这样做的。
+
+- [ ] 绝对不要返回一个指向local stack对象的pointer或reference，或者返回一个reference指向heap-allocated对象（可能造成内存无法delete）。或者返回一个pointer和reference指向一个local static 对象而这个对象可能同时需要多个。local static对象在多线程中写时需要特殊考虑。
+
 ### 条款22 : 将成员变量声明为private
 
 ### 条款23 : 宁以non-member、non-friend替换member函数

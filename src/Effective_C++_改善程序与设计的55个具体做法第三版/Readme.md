@@ -656,6 +656,8 @@ const Rational operator* (const Rational &lhs，const Rational &rhs) {
 
 ### 条款25 : 考虑写出一个不抛出异常的swap函数
 
+
+
 ## 第五章 实现
 
 ### 条款26：尽可能延后变量定义式的出现时间

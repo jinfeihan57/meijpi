@@ -1,7 +1,3 @@
-[TOC]
-
-
-
 # 改善程序与设计的55个具体做法
 
 ## 第一章 让自己习惯 C++
@@ -309,11 +305,13 @@ PriortyCustomer& PriortyCustomer::operator=(const PriortyCustomer & rhs){
 
 ​		2：shared_ptr：采用RCSP（Reference counting smart pointer）技术，shared_ptr允许指针对象赋值并且在无人指向时自动delete。不同的时RCSP无法打破环状引用，例如两个对象彼此互指。（需要使用weak_ptr来解决环状引用的问题）
 
-​		auto_ptr和shared_ptr都是在其析构函数内做delete而不是delete[ ] 动作，因此这两个智能指针都不能在动态分配的array身上使用。
+​		**auto_ptr和shared_ptr都是在其析构函数内做delete而不是delete[ ] 动作，因此这两个智能指针都不能在动态分配的array身上使用。**
 
 ```c++
 shared_ptr<int> spi(new int[10])   // 虽然编译器不会报错，但是这样做显然不对
 ```
+
+​		可以将数组包装在一个对象内，对象的构造函数调用new[ ]，对象的析构函数调用delete[ ]，并重载数组对象类的operator[ ]接口，方便访问数组元素。可以通过智能指针的operator->操作等方法对，数组进行访问。
 
 针对数组型智能指针参见条款55中 boost::scoped_array 和boost::shared_array 类。
 

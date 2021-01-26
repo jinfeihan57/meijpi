@@ -656,7 +656,21 @@ const Rational operator* (const Rational &lhs，const Rational &rhs) {
 
 ### 条款25 : 考虑写出一个不抛出异常的swap函数
 
+​		**本节致力于实现一个高效且不抛出异常的swap函数，如果你的编译环境支持c++11，并且你为的所有自定义类（pimpl ）实现了一个不抛出异常的移动构造函数，则可跳过本节。因为在c++11中的swap采用了std::move函数，来高效的实现swap机制。**
 
+​		本章所描述的都是在不支持c++11 的情况下如何实现一个高效且接口友好的swap函数。**function template不支持偏特化。**
+
+​		如果swap缺省版的效率不足时通常你的class或者template使用了pimpl 机制：
+
+1. 提供一个public swap成员函数，让他高效的swap你的类型，并且这个swap不可以抛出异常（不抛异常的swap是强烈异常安全性的保障：条款29）。
+2. 在你的class或者template所在的名命空间内提供一个non-member swap，并使其调用member swap。
+3. 如果你在编写一个class而非class template，为你的class特化std::swap.并使其调用你的member swap。
+4. 最后，如果你调用swap，请确保包含一个using声明，以便让std::swap在你的函数内曝光可见，然后不加任何namespace修饰的，赤裸裸的调用swap。
+
+- [ ] 当std::swap对你的类型（通常为pimpl “pointer to implementation”）效率不高时，提供一个swap成员函数，并确定这个函数不抛出异常。
+- [ ] 如果你提供一个member swap，也该提供一个non-member swap 用来调用前者。对于classes（而非template），也请特化std::swap。
+- [ ] 调用swap时应该针对std::swap使用using声明式，然后调用swap并且不带任何“命名空间资格修饰”。
+- [ ] 为“用户定义类型”进行std template全特化是最好的，但千万不要尝试在std内加如某些对std而言全新的东西。
 
 ## 第五章 实现
 
@@ -705,6 +719,22 @@ for(int i = 0; i < N; i++){
 - [ ] 尽可能延后变量定义式的出现。这样做可增加程序的清晰度并改善程序效率。
 
 ### 条款27：尽量少做类型转换
+
+​		C++提供四种新式转型（相比于C语言的类型强转）。c++中旧式转换依然合法，但是推荐使用新式的类型转换。
+
+const_cast<T>: 通常被用来将对象的常量属性移除。
+
+dynamic_cast<T>: 安全的向下类型转换（基类转派生类）。唯一一个无法采用旧式转换的动作，通常耗费巨大的转换运行成本。
+
+reinterpret_cast<T>: **慎用**意图执行低级转型，实际动作可能取决于编译器，因此不可移植。（不受限在各种类型间转换，但是必须清楚自己在做什么。否则出现位置错误。）(类型转换主要用在指针与整数之间的转换，reinterpret_cast在转换成其他类型的目的只是临时隐藏自己，正正想要使用这个值的时候，必须在转换为其原来类型。类似C语言线程传参，传入任何struct指针都必须以void*传入，接收到指针变量后再强转为真实的类型，完成API接口的调用)
+
+static_cast<T>: 用来强迫隐式转换。（旧式转换大部分都可以采用static_cast替换（建议替换））。
+
+​		优良的c++代码很少使用转型，尽量避免转型。尤其在效率优先的系统中避免dynamic_cast类型转换。（之所以使用dynamic_cast通常是因为你想在一个你认为derived class 身上执行derived class的操作函数，但你手上只有一个base class的pointer或者reference）采用父类虚函数指针的多态来避免类型的向下转型。
+
+- [ ] 如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_cast。更改设计方案。
+- [ ] 如果转型是必要的，试着将它隐藏于某个函数背后。客户随后可以调用该函数，而不需要将转型放进他们自己的代码内。
+- [ ] 宁可使用c++style新式转型，不要使用旧式转型。前者很容易辨识出来，而且也比较有着分门别类的职责。
 
 ### 条款28：
 

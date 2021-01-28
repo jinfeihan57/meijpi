@@ -10,6 +10,38 @@
 
 ### 条款03：尽可能使用const
 
+​		如果你的变量不可以改变其值，请使用const修饰明确的指示给编译器，让编译器帮你检查。
+
+​		STL迭代器iterator同样有const版本：const_iterator。
+
+​		const最具权威的用法是面对函数声明时的应用。在一个函数声明式内，const可以和函数返回值、各参数、函数自身(如果是成员函数)产生关联。
+
+​		自定义类型的操作符重写后，操作符的表现应当和内置类型的相同操作符一致。例如乘法操作符返回值不可以再次赋值因此用const修饰operator*()返回值。
+
+​		const成员函数承诺不对对象的属性进行修改，使对const修饰的变量的操作成为可能。并且对条款20 （pass-by-reference-to-const方式传递对象）的技术前提就是我们有const成员函数处理const修饰的变量。依据bitwise const，const成员函数不可以更改对象内任何non-static成员变量。
+
+​		如果某个成员变量即便在const成员函数内也要改变，可以用mutable关键字修饰; mutable int a;
+
+​		项目中可以为类单独封装一个数组类重写operator[ ] 方法。operator[ ]方法重写时，建议参考本条款示例。
+
+```c++
+class TextBlock{
+public:
+	const char& operator[](std::size_t position) const {	// const 成员函数不可以调用non-const成员函数，因为对象有被修改的风险，
+		...													// 除非使用const_cast将对象的const属性释放掉
+		...
+		return text[position];
+	}
+	char& operatoe[](std::size_t position){			// 为了避免重复代码和方便后期维护，non-const版本借助const版本实现。
+		return const_cast<char&>(static_cast<const TextBlock&>(*this)[position]);
+	}
+}
+```
+
+- [ ] 将某些东西声明为const可以帮助编译器侦测出错误的用法。const可被施加于任何作用域内的对象、函数参数、函数返回值、成员函数本体。
+- [ ] 编译器强制实施（bitwise constness），但你编写程序时应该使用“概念上的常量”（conceptual contness）。
+- [ ] 当const和non-const成员函数有着实质等价的实现时，令non-const版本调用const版本可避免代码重复。（重复代码多时建议使用本规则，为了方便后续的代码维护更应该遵循本规则）
+
 ### 条款04：确定对象被使用前已先被初始化
 
 ​		至于内置类型，读取前必须对其进行初始化。而非内置类型（自定义或者STL 类），初始化的责任落在了构造函数身上。所以必须确保构造函数将对象内的每一个成员进行初始化。

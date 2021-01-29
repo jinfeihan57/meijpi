@@ -893,7 +893,48 @@ void PrettyMenu::changeBackground(std::istream &imgSrc){
 
 ### 条款33：避免遮掩继承而来的名称
 
+​		在c++编程中，内层作用域会变量名会遮蔽外层作用域的变量名（变量名相同情况下）。
 
+​		derived class的作用域被嵌套在base class作用域内。
+
+​		在子类继承父类后父类的方法可能会被隐藏，例如，父类中的方法mf1()有重载多次，在子类中只重写了一个（少于父类重载次数）mf1()函数，则子类只能访问自己重写的那个方法，而父类重写的都不可以访问。这个行为背后的基本原理是为了防止你在程序库或者应用框架内建立新的derived class时附带地从疏远的base class继承重载函数。但是这个隐藏违反了public继承的原则，并且你可能希望继承父类的部分重载而重写一部分重载。解决这种情况有两种方法：方法一，采用转交函数，这种方法代码量较大。
+
+```c++
+class Base{
+public:
+    virtual void mf1();
+    virtual void mf1(int a);
+}
+class Derived : public Base{
+public:
+    virtual void mf1(){			// 将父类的接口封装在子类名称相同的函数中
+        Base::mf1();			// 调用指定父类的接口
+    }
+    virtual void mf1(int a){   	// 将父类的接口封装在子类名称相同的函数中
+        Base::mf1(a);			// 调用指定父类的接口
+    }
+}
+```
+
+方法二，在支持using关键字的c++编译器版本上，采用using关键字。
+
+```c++
+class Base{
+public:
+    virtual void mf1();
+    virtual void mf1(int a);
+}
+class Derived : public Base{
+public:
+    using Base::mf1;		// 将Base class内名为 mf1 的所有东西都在Derived内可见。
+    virtual void mf1(){		// 亦然可以对继承而来的部分重载函数进行重写，而不影响未被重写的重载接口的访问
+        ...;
+    }
+}
+```
+
+- [ ] derived classed 内的名称会遮掩base classed内的名称（相同变量名会被遮掩，相同函数名会被遮掩（多个重载函数名字当做一个处理，都会被遮掩））。在public继承下不应该如此。
+- [ ] 为了让被遮掩的名称再见天日，可以使用 using 声明式或者转交函数（forwarding function）。
 
 ### 条款34：区分接口继承和实现继承
 

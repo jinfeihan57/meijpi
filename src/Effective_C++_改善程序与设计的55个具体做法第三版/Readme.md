@@ -938,6 +938,60 @@ public:
 
 ### 条款34：区分接口继承和实现继承
 
+​		在public继承概念中，分为两个部分：函数接口继承和函数实现继承。类似于函数声明和函数定义。
+
+​		从继承角度考虑，类成员函数一般分为三种.
+
+  1. 纯虚函数（pure virtual）
+
+     ​		pure virtual 函数：任何继承了他们的class必须对他们进行实现，一般基类中不会对pure virtual函数进行实现（但是语法允许）。
+
+     ​		借助纯虚函数实现的语法，解决场景：基类的多个派生类中大部分可以采用默认实现，而个别几个必须派生类实现。为避免派生类忘记实现，因此将接口声明为纯虚函数（而不是非纯虚函数）。纯虚函数在父类中也可以有一份实现代码（调用时知名父类的作用域即可)。一般子类可继承接口后在接口中调用父类的实现即可。特殊子类在继承了接口后实现自己的方法。这样因为接口为纯虚函数所以不会出现子类忘记实现的问题。并且可以调用父类的接口定义，实现了代码的复用。（函数名一致，避免出现理解异议）
+
+     ```c++c
+     class Airplane {
+     public:
+     	virtual void fly(const Airport& destination) = 0; // 纯虚函数
+     }
+     void Airplane::fly(const Airport& destination){
+     	// 缺省实现方式
+     }
+     class ModelA : public Airplane{
+     	virtual void fly(const Airport& destination){		// 实现父类的虚接口
+     		Airplane::fly(destination);		// 调用父类的实现
+     	}
+     }
+     class ModelB : public Airplane{
+     	virtual void fly(const Airport& destination){		// 实现父类的虚接口
+     		Airplane::fly(destination);		// 调用父类的实现
+     	}
+     }
+     class ModelC : public Airplane{
+     	virtual void fly(const Airport& destination){		// 实现父类的虚接口
+     		// 自己的实现方法
+     	}
+     }
+     ```
+
+     ​		纯虚函数就是为了被子类只继承接口，具体实现需要子类自己来发挥。
+
+  2. 非纯虚函数（impure virtual）
+
+     ​		impure virtual函数，在基类中有一份自己的默认实现。当子类不需要实现时，子类继承非纯虚函数的实现。
+
+  3. 非虚函数（non-virtual）
+
+     ​		non-virtual 函数所表现的不变性凌驾与特异性。因此一般不对其进行重写。是对子类接口的一份强制实现（c++11中可采用final修饰 （可继承不可重写））。
+
+     pure virtual 、impure virtual 、non-virtual函数之间的差异，使你得以精确指定你想要 子类继承的东西：之继承接口，继承接口和实现，继承接口和一份强制实现。
+
+     non-virtual析构函数一定要特别注意，不然将会引来父类析构问题。（存在继承，一般要考虑父类析构为虚函数）
+
+- [ ] 接口继承和实现继承不同，在public继承之下，derived class 总是继承base class的接口。
+- [ ] pure virtual 函数只具体指定接口继承。
+- [ ] 非纯 impure virtual 函数 具体指定接口继承及缺省实现继承。
+- [ ] non-virtual 函数具体指定接口继承以及强制性实现继承。
+
 ### 条款35：考虑virtual函数以外的其他选择
 
 ### 条款36：绝不重新定义继承而来的non-virtual函数

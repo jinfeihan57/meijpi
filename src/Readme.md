@@ -6,3 +6,4 @@
 
 ## [3.设计模式](https://www.cnblogs.com/schips/p/common-design-pattern-about-cpp.html)
 ## [4.Lock-Free Queue](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.8674&rep=rep1&type=pdf)
+## [5.GCC编译器手册](https://gcc.gnu.org/)

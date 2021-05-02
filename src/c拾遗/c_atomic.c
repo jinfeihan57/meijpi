@@ -13,6 +13,7 @@
 // type __atomic_add_fetch (type *ptr, type val, int memorder);
 // type __atomic_fetch_add (type *ptr, type val, int memorder);
 // void __atomic_exchange (type *ptr, type *val, type *ret, int memorder);
+// bool __atomic_compare_exchange_n (type *ptr, type *expected, type desired, bool weak, int success_memorder, int failure_memorder)
 
 #define NUM_THREADS 100
 int a = 10;
@@ -25,6 +26,12 @@ void * fun(void * argv){
 		__atomic_add_fetch(&a, 1, __ATOMIC_RELAXED);
 	}
 }
+
+
+struct IA{
+    int i;
+    char a;
+};
 
 int main(){
 	
@@ -56,7 +63,7 @@ int main(){
 	__atomic_fetch_add(&b, 2, __ATOMIC_RELAXED);
 
     int ret = 0;
-    __atomic_exchange(&b, &c, &ret, __ATOMIC_RELAXED);
+    // __atomic_exchange(&b, &c, &ret, __ATOMIC_RELAXED);
     __atomic_exchange(&b, &c, &c, __ATOMIC_RELAXED);
 	
 	printf("%d\n", a);
@@ -64,5 +71,22 @@ int main(){
 	printf("%d\n", c);
 	printf("%d\n", ret);
 	
-	
+    struct IA old;
+    old.i = 5;
+    old.a = 'H';
+
+    struct IA new;
+    new.i = 7;
+    new.a = 'T';
+
+    struct IA tmp;
+    tmp.i = 5;
+    tmp.a = 'H';
+
+    printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
+    __atomic_exchange(&old, &new, &tmp, __ATOMIC_RELAXED);
+    printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
+    
+	__atomic_compare_exchange_n(&old, &new, tmp, 1, __ATOMIC_RELAXED, __ATOMIC_ACQ_REL);
+    printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
 }

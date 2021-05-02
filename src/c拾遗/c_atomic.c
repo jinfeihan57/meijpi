@@ -11,11 +11,13 @@
 
 // oid __atomic_store (type *ptr, type *val, int memorder);
 // type __atomic_add_fetch (type *ptr, type val, int memorder);
-// type __atomic_fetch_add (type *ptr, type val, int memorder) 
+// type __atomic_fetch_add (type *ptr, type val, int memorder);
+// void __atomic_exchange (type *ptr, type *val, type *ret, int memorder);
 
 #define NUM_THREADS 100
 int a = 10;
 int b = 20;
+int c = 3;
 
 void * fun(void * argv){
 	for(int i = 0; i < 1000000; i++){
@@ -52,9 +54,15 @@ int main(){
 	__atomic_add_fetch(&a, 1, __ATOMIC_RELAXED); */
 	
 	__atomic_fetch_add(&b, 2, __ATOMIC_RELAXED);
+
+    int ret = 0;
+    __atomic_exchange(&b, &c, &ret, __ATOMIC_RELAXED);
+    __atomic_exchange(&b, &c, &c, __ATOMIC_RELAXED);
 	
 	printf("%d\n", a);
 	printf("%d\n", b);
+	printf("%d\n", c);
+	printf("%d\n", ret);
 	
 	
 }

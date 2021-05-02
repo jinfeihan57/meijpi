@@ -80,13 +80,13 @@ int main(){
     new.a = 'T';
 
     struct IA tmp;
-    tmp.i = 5;
-    tmp.a = 'H';
 
     printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
     __atomic_exchange(&old, &new, &tmp, __ATOMIC_RELAXED);
     printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
-    
-	__atomic_compare_exchange_n(&old, &new, tmp, 1, __ATOMIC_RELAXED, __ATOMIC_ACQ_REL);
+
+	tmp.i = 23;
+	tmp.a = 'F';	
+	__atomic_compare_exchange(&old, &new, &tmp, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
     printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
 }

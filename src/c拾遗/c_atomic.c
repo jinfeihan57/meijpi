@@ -4,6 +4,12 @@
 *
 *******************************************************************/
 
+/*
+The ‘__atomic’ builtins can be used with any integral scalar or pointer type that is 1, 2,
+4, or 8 bytes in length. 16-byte integral types are also allowed if ‘__int128’ 
+is supported by the architecture.
+*/
+
 
 #include <stdio.h>
 #include <pthread.h>
@@ -23,6 +29,7 @@ int c = 3;
 void * fun(void * argv){
 	for(int i = 0; i < 1000000; i++){
 		//a = a + 1;
+        // __sync_add_and_fetch(&a, 1);
 		__atomic_add_fetch(&a, 1, __ATOMIC_RELAXED);
 	}
 }
@@ -30,7 +37,7 @@ void * fun(void * argv){
 
 struct IA{
     int i;
-    char a;
+    int a;
 };
 
 int main(){
@@ -89,4 +96,7 @@ int main(){
 	tmp.a = 'F';	
 	__atomic_compare_exchange(&old, &new, &tmp, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
     printf("old %d,%c,  new %d,%c\n", old.i, old.a, new.i, new.a);
+
+
+    __int128 h = 0;
 }

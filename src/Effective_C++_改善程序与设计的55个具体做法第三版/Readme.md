@@ -994,18 +994,164 @@ public:
 
 ### 条款35：考虑virtual函数以外的其他选择
 
+**模板设计模式**
+
+**策略设计模式**
+
 ### 条款36：绝不重新定义继承而来的non-virtual函数
+
+​		当采用父类指针调用非虚函数时，调用的就是父类的实现。调用虚函数时，因为多态，调用的是子类的实现。如果子类public继承（is-a）父类，子类不应该在重新实现父类的非虚函数。
+
+​		假设mf为D从B继承来的非虚函数。如果D重新定义mf，设计就出现了矛盾，如果D真的有必要实现出与B不同的mf，并且如果每一个B对象--不管怎么特化--真的有必要使用B所提供的的mf，那么D作为其中的一个特化就不是一个B。就不应该以public的方式继承B。
 
 ### 条款37：绝不重新定义继承而来的缺省参数值
 
+​		遵从条款36，不可以重新定义继承来的非虚函数。那么继承来的函数就只剩下虚函数。虚函数时动态绑定的，而默认参数是静态绑定。两者相互矛盾，设计不合理。
+
+​		当继承的虚函数拥有默认参数时，根据条款37，将会造成重复代码。解决的方案是模板模式，采用非虚函数包装一下虚函数，因为条款36，非虚函数不可被重写。
+
+​		**唯一应该被重新定义的是动态绑定的东西。**
+
 ### 条款38：通过复合塑造出has-a或者“根据某物实现出”
+
+​		在应用域，复合意味着 has-a。在实现域，复合意味着根据某物实现出（标准模板库，把一个list包装成set）。
 
 ### 条款39：明智而审慎的使用private继承
 
+​		如果classes之间的继承关系是private的，编译器不会自动将一个derived class对象转换为一个base class对象。由private base class继承而来的所有成员，在derived class中会变成private属性。
+
+​		private继承意味着只有实现部分被继承，接口部分没有被继承。private继承在软件设计层面没有意义，其意义在软件实现层面。
+
+​		private继承意味着is-implemented-in-terms-of，这和复合的意义一样，在考虑使用private继承的时候，一定优先考虑复合。绝大部分的is-implemented-in-terms-of都可以使用复合解决，除非derived class需要访问base class的protect成员。
+
+- [ ] private 继承意味着is-implemented-in-terms-of（根据某物实现出）。它通常比复合（composition）的级别低。但是当derived class 需要访问protect base class的成员，或者需要重新定义继承而来的虚函数时，这么设计是合理的
+- [ ] 和复合不同，private继承可以造成empty base最优化。这对致力于“对象尺寸最小化”的程序库开发者而言，可能很重要。
+
 ### 条款40：明智而审慎的使用多重继承
+
+```c++
+class A{
+public:
+    void fun(){
+	}
+};
+class B{
+public:
+    void fun(){
+	}
+};
+class C:
+	public A,
+	public B{
+public:
+    void fun(){
+	}
+};
+class C c;
+c.fun(); // 错误
+c.A::fun();//正确
+```
+
+​		当同时继承两个父类时，如果父类中有相同名字的方法。则会导致调用时的歧义。必须要加上父类名限制，以避免歧义。
+
+```c++
+class A{
+public:
+    void funA(){
+	}
+};
+class B : public A{
+public:
+    void funB(){
+	}
+};
+class C : public A{
+public:
+    void funC(){
+	}
+};
+class D : public C{
+public:
+    void funD(){
+	}
+};
+```
+
+​		class A被class D，多重继承。导致D中有两个A空间，需要通过继承而来的类名来指定调用关系如无必要可采用虚继承。
+
+```
+class A{
+public:
+    void funA(){
+	}
+};
+class B : virtual public A{
+public:
+    void funB(){
+	}
+};
+class C : virtual public A{
+public:
+    void funC(){
+	}
+};
+class D : public C{
+public:
+    void funD(){
+	}
+};
+```
+
+​		这样D中只有一份A。
+
+​		但是采用虚继承的子类，使用空间大和访问效率低。需要为虚继承付出代价。关于虚继承非必要不使用，如果一定要使用虚继承应急可能避免在其中放置数据。
+
+- [ ] 多重继承比单一继承复杂，他可能导致新的歧义性，以及对virtual继续的需要。
+- [ ] virtual继承会增加大小，速度，初始化（赋值）复杂度等等成本。如果virtual base class不带任何数据，将是最具实用价值的情况。
+- [ ] 多重继承的确有正当用途。其中一个情节涉及“public 继承某个interface class” 和 “private 继承某个协助实现的class（标准模板库，把一个list包装成set）”
 
 ## 第七章 模板与泛型编程
 
+### 
+
 ## 第八章 定制new和delete
 
+### 条款49：了解new-handler的行为
+
+​		new_handler * set_new_handler(new_handler *) ;参数是一个指针，指向operator new无法分配足够内存时应该被调用的函数。其返回值也是一个指针，指向set_new_handler被调用前正在执行（即将被替换）的那个new_handler；
+
+- [ ] set_new_handler允许客户指定一个函数，在内存分配无法获得满足时被调用。
+- [ ] nothrow new是一个颇为局限的工具，因为它只适用于内存你分配，后继的构造函数还是可能跑出异常。
+
+### 条款50：了解new和delete的合理替换时机
+
+​		非必要不重写new和delete，除非你可以确定能优化你的效率，或者可以检测heap的使用。但是这两块最好交由专业的人去做，内存申请的考虑jemalloc，mimalloc等内存项目（对小内存申请的优化），heap泄露考虑使用valgrind检测。
+
+​		内存访问中注意地址对齐（4字节或8字节）可以大幅提高访问效率。在对齐提高效率方面也可以考虑cache line对齐，以避免cache颠簸，提高cache的效率。（cache line中有一个数据脏则整行数据都被标示为脏）
+
+- [ ] 有许多理由需要写个自定义的new和delete，包括改善性能，对heap运用错误进行调试、手机heap使用信息。
+
+### 条款51：编写new和delete时需固守常规
+
+​		重新定义new，delete函数通常为了更高的效率。因此这些函数通常都是针对某个特定类型的优化，但是如果这个类型作为了基类被继承，子类也会继承基类的new和delete函数。重定义的new和delete函数对子类的效率可能并不如意，因此重写new和delete的类最好不要做为基类应该是final的，或者在new函数中对size的大小进行判断，但是如果子类不对内存进行扩展，则此判断无意义。因此最好是重写new和delete的类不被继承。
+
+- [ ] operator new 应该内含一个无穷循环，并在其中尝试分配内存，如果它无法满足内存需求，就该调用new-handler。他也应该有能力处理0byte申请。class专属版本则应该处理“比正确大小更大的申请”。
+- [ ] operator delete 应该在收到null指针时不做任何事。class 专属版本则应该处理“比正确大小更大的释放”。
+
+### 条款52：写了placement new也要写placement delete
+
+- [ ] 当你写一个 placement operator new，请确定也写一个对应的 placement operator delete。如果没有这样做，你的程序可能会发生隐微并且时断时续的内存泄露。
+- [ ] 当你声明placement new和placement delete，请确保不要无意识的遮掩他们的正常版本。
+
 ## 第九章 杂项讨论
+
+### 条款53：不要忽略编译器告警严肃
+
+​		在运行时绑定的信息如果出现了歧义，在编译时可能只是报一个告警。因此要对运行时才绑定的信息，做到告警零容忍。
+
+- [ ] 严肃对待编译器发出的告警信息，努力在你的编译器的最高告警级别下争取无任何告警的荣誉。**编译告警一定清零**
+- [ ] 不要过度依赖编译器的报警能力，因为不同的编译器对待事情的态度并不相同，一旦移植到另一个编译器上，你原本依赖的警告信息有可能消失。
+
+### 条款54：让自己熟悉TR1在内的标准程序库
+
+### 条款55：让自己熟悉Boost

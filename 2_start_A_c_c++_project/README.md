@@ -7,7 +7,7 @@
 # START A c/c++ PROJTCT
 把简单的事情做复杂
 ## [hello world 人生中第一个c/c++工程](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/hello_world)
-## [分离 hello world](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/separate_stage2)
+## [解耦 hello world](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/separate_stage2)
 ## [使用 makefile](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_makefile)
 ## [使用 cmake](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/cmake_stage2)
 ## [gtest测试框架](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/add_gtest)

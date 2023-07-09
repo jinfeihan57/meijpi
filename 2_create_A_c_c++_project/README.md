@@ -13,7 +13,7 @@
 ## [使用 makefile](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_makefile)
 Makefile 只能在类 unix 系统上使用，无法在 Windows 系统。c/c++语言是跨平台的，只因为构建方式导致项目跨平台失败，这显然是不可接受的。
 ## [使用 cmake](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/cmake_stage2)
-cmake 是跨平台的 c/c++ 编译脚本。完美解决项目构建跨平台问题。最大化利用 c/c++ 的跨平台特性。
+cmake 是跨平台的 c/c++ 编译脚本。完美解决项目构建跨平台问题。最大化利用 c/c++ 的跨平台特性。一个典型的 c/c++ 工程搭建完成。
 ## [gtest测试框架](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/add_gtest)
 项目在开发过程中，如何保证开发的代码是正确的？答案显而易见 **"测试"**。任何一个完整的项目都必须引入测试框架，以保证各个模块提供的能力是正确可靠的。googletest 是当下最流行的 c/c++ 测试框架。
 ## [使用gtest](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_gtest_stage1)

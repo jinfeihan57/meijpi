@@ -11,7 +11,7 @@
 ## [解耦 hello world](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/separate_stage2)
 各个功能块按照责任田划分不同的目录和文件，逻辑清晰易于管理，团队合作效率高。但是编译操作复杂，低效。
 ## [使用 makefile](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_makefile)
-Makefile 只能在类 unix 系统上使用，无法在 Windows 系统。c/c++语言是跨平台的，只因为构建方式导致项目跨平台失败，这显然是不合理的。
+Makefile 只能在类 unix 系统上使用，无法在 Windows 系统。c/c++语言是跨平台的，只因为构建方式导致项目跨平台失败，这显然是不可接受的。
 ## [使用 cmake](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/cmake_stage2)
 cmake 是跨平台的 c/c++ 编译脚本。完美解决项目构建跨平台问题。最大化利用 c/c++ 的跨平台特性。
 ## [gtest测试框架](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/add_gtest)

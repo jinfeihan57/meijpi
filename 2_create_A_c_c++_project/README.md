@@ -7,6 +7,7 @@
 # CREATE A c/c++ PROJTCT
 把简单的事情做复杂
 ## [hello world 第一个c/c++工程](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/hello_world)
+各个功能块耦合严重，后期维护困难，函数体积迅速膨胀，导致逻辑不清晰，功能责任田混论，团队开发困难。不要说大项目，连小项目也难以开发。
 ## [解耦 hello world](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/separate_stage2)
 ## [使用 makefile](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_makefile)
 ## [使用 cmake](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/cmake_stage2)

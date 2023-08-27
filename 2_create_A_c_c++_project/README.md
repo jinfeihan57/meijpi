@@ -20,3 +20,4 @@ cmake 是跨平台的 c/c++ 编译脚本。完美解决项目构建跨平台问�
 ## [使用gtest](https://github.com/jinfeihan57/start_A_c_cpp_project/tree/use_gtest_stage1)
 熟练掌握 gtest ，并且真实的去开发测试用例。能为我们的项目提前屏蔽很多不必要的问题（尤其项目有一定规模时）。例如：项目迭代过程中，常常会出现修复一个 bug，又引入了多个 bug 的情况，如果此时对应的 api 有完整的测试用例，则可以提前暴露解决上述 bug。一个优秀的开发，必定也是一个好的测试。
 <br>
+

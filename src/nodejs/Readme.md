@@ -8,6 +8,7 @@ Linux Ubuntu环境
 
 int main(int argc, char* argv[])
 {
+                                // 跳过第一个命令参数
         int node_result = node::Start(argc-1, argv+1);
 
         return 0;
